@@ -17,8 +17,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.post('/address/on')
-async def post(ip : str ):
+@app.get('/address/on')
+async def get(ip : str ):
     updateIp(ip)
 @app.post('/address/off')
 async def post(ip : str ):

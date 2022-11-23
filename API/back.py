@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import pandas as pd
 import datetime
 
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://200.126.14.228:8801/')
 db_scan= client['scan']
 c_temperature= db_scan['temperature']
 c_address = db_scan['address']
@@ -22,3 +22,4 @@ def deleteIp(ip='0.0.0.0'):
 
 def sensor(degree= 0):
     c_temperature.insert_one({'createAt':datetime.datetime.now(), 'temperature': degree})
+updateIp('200.126.14.202')
