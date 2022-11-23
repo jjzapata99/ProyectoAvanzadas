@@ -2,7 +2,7 @@ from pymongo import MongoClient
 import pandas as pd
 import datetime
 
-client = MongoClient('mongodb://localhost:27017/')
+client = MongoClient('mongodb://0.0.0.0:8801/')
 db_scan= client['scan']
 c_temperature= db_scan['temperature']
 c_address = db_scan['address']
