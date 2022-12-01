@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from back import *
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 app = FastAPI(
     title= 'Monitoreo', description= 'Api para la carga de datos de monitoreo', version= '1.1.0'
 )
@@ -26,4 +28,7 @@ async def get(ip : str ):
 @app.get('/temperature')
 async def get(degrees : str):
     sensor(degrees)
-
+@app.get('/getPcs')
+async def get():
+    json_compatible_item_data = jsonable_encoder(getScan())
+    return JSONResponse(content=json_compatible_item_data)

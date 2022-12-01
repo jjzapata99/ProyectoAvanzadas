@@ -23,3 +23,8 @@ def deleteIp(ip='0.0.0.0'):
 
 def sensor(degree='0'):
     c_temperature.insert_one({'createAt':datetime.datetime.now(pytz.utc), 'temperature': degree})
+
+
+def getScan():
+    dt_pcs= pd.DataFrame(list(c_address.find()))
+    return dt_pcs
