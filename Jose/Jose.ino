@@ -1,100 +1,95 @@
 #include <WiFi.h>
-#include <ESP32Ping.h>
-#include <stdio.h>
-#include <HTTPClient.h>
+#include <PubSubClient.h>
+#include <Wire.h>
 
-#define ADC_VREF_mV    3300.0 
-#define ADC_RESOLUTION 4096.0
-#define PIN_LM35       35
+WiFiClient espClient;
+PubSubClient client(espClient);
 
-TaskHandle_t Task1;
-TaskHandle_t Task2;
+long lastMsg = 0;
+char msg[50];
+int value = 0;
 
-const char* ssid = "Lab_Avanzadas";
-const char* password =  "la1bo2ra3to4ri5o";
+//Configuracion de conexion wifi
+const char* ssid = "Kenyi Panchana";
+const char* password = "kenyi2603";
 
+//Conexion con servidor MQTT
+const char* mqtt_server = "192.168.3.28";
 
-void Task1code(void * pvParameters){
-  
-  for(;;){
-  WiFiClient client;
-  HTTPClient http;
-  int x =200 ;
-  
-  while (x <= 255){
-    String comando = "200.126.14." + String (x);
-    Serial.println(comando);
-    bool success = Ping.ping( comando.c_str(), 1);  
-    x+=1;
-    if(!success){
-    Serial.println("Ping failed");
-    http.begin(client, "http://200.126.14.228:8800/address/off?ip="+comando);
-    http.GET();
+//Configuraciones inciales
+void setup()
+{
+  Serial.begin(115200);
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+
+  //Agregar codico adicional
+}
+
+//Configuracion para conexion wifi
+void setup_wifi()
+{
+  delay(10);
+  Serial.println();
+  Serial.print("Conectado a ");
+  Serial.println(ssid);
+  WiFi.begin(ssid,password);
+  while(WiFi.status() != WL_CONNECTED){
+   delay(500);
+   Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi Conectado!");
+  Serial.println("IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
+//
+void callback(char* topic, byte* message, unsigned int length)
+{
+  Serial.print("Mensage recibido en topic: ");
+  Serial.print(topic);
+  Serial.print(", Message: ");
+  String messageTemp;
+  for (int i = 0; i < length; i++){
+    Serial.print((char)message[i]);
+    messageTemp += (char)message[i];
+  }
+  Serial.println();
+} 
+
+//RECONEXION
+void reconnect()
+{
+  while(!client.connected())
+  {
+    Serial.print("INTENTANDO CONEXION MQTT");
+    if(client.connect("ESPCLIENT")){
+      Serial.print("conectado");
+      client.subscribe("panico");
+    }
+    else{
+      Serial.print("fallo, rc =");
+      Serial.print(client.state());
+      Serial.println("intentelo de nuevo en 5s");
+      delay(5000);
+    }    
+  }
+} 
+
+//VOID LOOP
+void loop()
+{
+  if(!client.connected()){
+    reconnect();
+  }
+  client.loop();
+  long now = millis();
+  if (now - lastMsg > 4000) {
+    lastMsg = now;
+
+    client.publish("panico", "true"); //topic name (to which this ESP32 publishes its data). 37 is the dummy value.
     
   }
-  else{ 
-  Serial.println("Ping succesful.");
- 
-  http.begin(client, "http://200.126.14.228:8800/address/on?ip="+comando);
-  http.GET();
-  
-  }
- 
-  }
-
-   
-}
-}
-void Task2code(void * pvParameters){
-  for(;;){
-  WiFiClient client;
-  HTTPClient http;
-   
-    int adcVal = analogRead(PIN_LM35);
-    float milliVolt = adcVal * (ADC_VREF_mV / ADC_RESOLUTION);
-    float tempC = milliVolt / 10;
-    Serial.println(tempC);
-    http.begin(client, "http://200.126.14.228:8800/temperature?degrees="+String(tempC));
-    http.GET();
-    delay(1500);
-}
-}
-
-
-
-
-
-
-void setup() {
-  Serial.begin(115200);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println("Connecting to WiFi...");
-  }
-
-  xTaskCreatePinnedToCore(
-                    Task1code,  
-                    "scan",   
-                    10000,     
-                    NULL,       
-                    1,          
-                    &Task1,     
-                    0);                            
-  delay(500); 
-  xTaskCreatePinnedToCore(
-                    Task2code, 
-                    "sense",    
-                    10000,       
-                    NULL,        
-                    1,           
-                    &Task2,     
-                    1);          
-    delay(5000); 
-}
-  
- 
- 
-void loop() {
-  
 }

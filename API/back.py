@@ -3,7 +3,7 @@ import pandas as pd
 import datetime
 import pytz
 
-client = MongoClient('mongodb://10.0.1.71:8801/')
+client = MongoClient('mongodb://200.126.14.228:8801/')
 db_scan= client['scan']
 c_temperature= db_scan['temperature']
 c_address = db_scan['address']
@@ -25,6 +25,17 @@ def sensor(degree='0'):
     c_temperature.insert_one({'createAt':datetime.datetime.now(pytz.utc), 'temperature': degree})
 
 
-def getScan():
+def getScanPc():
     dt_pcs= pd.DataFrame(list(c_address.find()))
     return dt_pcs
+def getScanSensor(init_date, end_date):
+    query= {'createAt':{'$gte': datetime.datetime.strptime(init_date, '%d/%m/%Y'), '$lt': datetime.datetime.strptime(end_date+  " 23:59:59", '%d/%m/%Y %H:%M:%S')}}
+
+    dt_sensor= pd.DataFrame(list(c_temperature.find(query)))
+    dt_sensor['_id'] = dt_sensor['_id'].astype('|S')
+    print(datetime.datetime.now(pytz.utc))
+
+    return dt_sensor[["temperature","createAt","_id"]]
+
+
+

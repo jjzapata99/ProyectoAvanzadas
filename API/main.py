@@ -1,8 +1,14 @@
 from fastapi import FastAPI
+from typing import Union
+
 from fastapi.middleware.cors import CORSMiddleware
 from back import *
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+import datetime
+from dateutil.relativedelta import relativedelta
+import pytz
+
 app = FastAPI(
     title= 'Monitoreo', description= 'Api para la carga de datos de monitoreo', version= '1.1.0'
 )
@@ -30,5 +36,9 @@ async def get(degrees : str):
     sensor(degrees)
 @app.get('/getPcs')
 async def get():
-    json_compatible_item_data = jsonable_encoder(getScan())
+    json_compatible_item_data = jsonable_encoder(getScanPc())
+    return JSONResponse(content=json_compatible_item_data)
+@app.get('/getSensor')
+async def get(init_date: Union[str, None]  = str((datetime.datetime.now(pytz.utc)+ relativedelta(years=-1)).strftime('%d/%m/%Y')) , end_date:Union[str, None]  = str(datetime.datetime.now(pytz.utc).strftime('%d/%m/%Y'))):
+    json_compatible_item_data = jsonable_encoder(getScanSensor(init_date,end_date))
     return JSONResponse(content=json_compatible_item_data)
