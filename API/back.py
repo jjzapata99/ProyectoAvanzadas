@@ -33,9 +33,7 @@ def getScanSensor(init_date, end_date):
 
     dt_sensor= pd.DataFrame(list(c_temperature.find(query)))
     dt_sensor['_id'] = dt_sensor['_id'].astype('|S')
-    print(datetime.datetime.now(pytz.utc))
-
-    return dt_sensor[["temperature","createAt","_id"]]
+    return dt_sensor[["temperature","createAt","_id"]].to_dict(orient='records')
 
 
 
