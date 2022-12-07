@@ -33,7 +33,12 @@ def getScanSensor(init_date, end_date):
 
     dt_sensor= pd.DataFrame(list(c_temperature.find(query)))
     dt_sensor['_id'] = dt_sensor['_id'].astype('|S')
+
     return dt_sensor[["temperature","createAt","_id"]].to_dict(orient='records')
-
-
+def getlastSensed():
+    date= (datetime.datetime.now(pytz.utc)).strftime('%d/%m/%Y')
+    query= {'createAt':{'$gte': datetime.datetime.strptime(date, '%d/%m/%Y'), '$lt': datetime.datetime.strptime(date+  " 23:59:59", '%d/%m/%Y %H:%M:%S')}}
+    dt_last= pd.DataFrame(list(c_temperature.find(query)))
+    dt_last['_id'] = dt_last['_id'].astype('|S')
+    return dt_last.iloc[-1]
 

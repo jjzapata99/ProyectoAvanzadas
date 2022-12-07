@@ -42,3 +42,8 @@ async def get():
 async def get(init_date: Union[str, None]  = str((datetime.datetime.now(pytz.utc)+ relativedelta(years=-1)).strftime('%d/%m/%Y')) , end_date:Union[str, None]  = str(datetime.datetime.now(pytz.utc).strftime('%d/%m/%Y'))):
     json_compatible_item_data = jsonable_encoder(getScanSensor(init_date,end_date))
     return JSONResponse(content=json_compatible_item_data)
+@app.get('/getlastSensed')
+async def get():
+    json_compatible_item_data = jsonable_encoder(getlastSensed())
+    return JSONResponse(content=json_compatible_item_data)
+
